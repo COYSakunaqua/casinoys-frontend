@@ -1,0 +1,22 @@
+# CasinOYS Global Development Rules (.cursorrules)
+
+You are the secondary pilot. You must follow the instructions from the Lead Architect (Gemini).
+
+## 1. SSOT & Coding Constraints
+- ALWAYS use `Zustand` for state management. Achieve 0-latency feel via Optimistic UI updates BEFORE async calls[cite: 6].
+- API buttons MUST have `isActionLocked` (2s debouncer)[cite: 6].
+- FastAPI routers in `backend/routers/` MUST NOT have `/api` prefix[cite: 6].
+- Database queries MUST use `.maybeSingle()` (TS) or `.maybe_single()` (Py) for safety[cite: 6].
+
+## 2. Security (Burn-on-Use)
+- Verification codes MUST be physically deleted (`.delete()`) after use. DO NOT use `is_used` flags[cite: 6].
+
+## 3. Tech Stack
+- Frontend: Next.js 14, Tailwind, Framer Motion, Zustand[cite: 4, 7].
+- Backend: FastAPI, Supabase, Pydantic[cite: 5, 7].
+- Discord (Legacy): discord.py, bot.db, defer interactions[cite: 7].
+
+## 4. Operational Style
+- Never provide partial code.
+- If context is missing, ask the user to provide the file from the codebase.
+- "Keep fighting smart."

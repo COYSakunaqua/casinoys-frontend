@@ -2,12 +2,15 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 
+export type MatchOptionId = 'home' | 'away' | 'draw';
+
 export interface Match {
   id: string;
   home_team: string;
   away_team: string;
   home_odds: number;
   away_odds: number;
+  draw_odds?: number;
   is_active: boolean;
 }
 
@@ -26,6 +29,8 @@ export interface MarqueeMessage {
   timestamp: number;
 }
 
+export type ViewState = 'dashboard' | 'betting' | 'derivatives';
+
 interface CasinoState {
   balance: number;
   vipLevel: number;
@@ -33,9 +38,14 @@ interface CasinoState {
   isWalletConnected: boolean;
   hasEnteredCasino: boolean;
   
+  // 視圖路由狀態 (SPA Routing)
+  currentView: ViewState;
+  setCurrentView: (view: ViewState) => void;
+  
   // 盤口與歷史訂單狀態
   activeMatches: Match[];
   myBets: Bet[];
+  betHistory: Bet[];
   marqueeMessages: MarqueeMessage[];
   
   setUser: (user: User | null) => void;
@@ -50,6 +60,7 @@ interface CasinoState {
   // 資料載入與狀態更新
   setActiveMatches: (matches: Match[]) => void;
   setMyBets: (bets: Bet[]) => void;
+  setBetHistory: (bets: Bet[]) => void;
   addMarqueeMessage: (text: string) => void;
   
   logout: () => Promise<void>;
@@ -61,8 +72,13 @@ export const useStore = create<CasinoState>((set) => ({
   user: null,
   isWalletConnected: false,
   hasEnteredCasino: false,
+  
+  currentView: 'dashboard',
+  setCurrentView: (view) => set({ currentView: view }),
+  
   activeMatches: [],
   myBets: [],
+  betHistory: [],
   marqueeMessages: [
     { id: 'sys-1', text: 'SYSTEM: 歡迎來到 CasinOYS V5 測試大廳 | 國庫狂熱點火監控中...', timestamp: Date.now() }
   ],
@@ -74,7 +90,7 @@ export const useStore = create<CasinoState>((set) => ({
   // 樂觀更新：下注瞬間扣款
   optimisticBet: (amount) => set((state) => ({ balance: state.balance - amount })),
   
-  // 樂觀更新：套現瞬間入帳 (75折)
+  // 樂觀更新：套現瞬間入帳 (75折貼現)
   optimisticCashout: (expectedPayout) => set((state) => ({ balance: state.balance + Math.floor(expectedPayout * 0.75) })),
   
   // 真實數據同步 (防呆回滾)
@@ -82,7 +98,8 @@ export const useStore = create<CasinoState>((set) => ({
   
   setActiveMatches: (matches) => set({ activeMatches: matches }),
   setMyBets: (bets) => set({ myBets: bets }),
-  
+  setBetHistory: (bets) => set({ betHistory: bets }),
+
   // 跑馬燈寫入 (保留最新 5 條訊息避免記憶體擁擠)
   addMarqueeMessage: (text) => set((state) => {
     const newMsg = { id: Math.random().toString(36).substring(7), text, timestamp: Date.now() };
@@ -97,8 +114,10 @@ export const useStore = create<CasinoState>((set) => ({
       balance: 0, 
       vipLevel: 0, 
       hasEnteredCasino: false,
+      currentView: 'dashboard',
       activeMatches: [],
-      myBets: []
+      myBets: [],
+      betHistory: [],
     });
   }
 }))

@@ -1,0 +1,28 @@
+'use client'
+import { useStore } from '@/store/useStore'
+
+export default function BettingLobby() {
+  // 狀態預留：取得用戶 VIP 等級以計算盲盒限購防護 (VIP_Level * 2)
+  
+  return (
+    <div className="p-6 max-w-4xl mx-auto w-full flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 uppercase tracking-wider">
+          The Odds Exchange
+        </h2>
+        {/* 切換回 Dashboard 的按鈕，需等 useStore 實作 setCurrentView */}
+        <button 
+          onClick={() => { /* (useStore.getState() as any).setCurrentView('dashboard') */ }}
+          className="px-4 py-2 bg-gray-800 text-gray-300 rounded text-sm hover:bg-gray-700 transition"
+        >
+          Return to Dashboard
+        </button>
+      </div>
+
+      {/* 盤口清單預留區 */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-8 text-center text-gray-500 font-mono">
+        TIER-1 SPORTSBOOK MODULE INITIALIZING...
+      </div>
+    </div>
+  )
+}
