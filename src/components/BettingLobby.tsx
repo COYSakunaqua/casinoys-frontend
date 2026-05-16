@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import { supabase } from '@/lib/supabase'
-
-const apiUrl = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { apiFetchPath } from '@/lib/api'
 
 type Toast = { id: number; message: string; variant: 'error' | 'success' }
 
@@ -41,8 +40,8 @@ export default function BettingLobby() {
     const loadLobbyData = async () => {
       try {
         const [treasuryRes, matchesRes] = await Promise.all([
-          fetch(`${apiUrl()}/api/internal/treasury`),
-          fetch(`${apiUrl()}/api/betting/matches`),
+          fetch(apiFetchPath('/api/internal/treasury')),
+          fetch(apiFetchPath('/api/betting/matches')),
         ])
 
         if (treasuryRes.ok) {
@@ -124,7 +123,7 @@ export default function BettingLobby() {
 
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        const res = await fetch(`${apiUrl()}/api/betting/place_bet`, {
+        const res = await fetch(apiFetchPath('/api/betting/place_bet'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import { supabase } from '@/lib/supabase'
+import { apiFetchPath } from '@/lib/api'
 
 export default function AuthBridge() {
   const [keyInput, setKeyInput] = useState('')
@@ -29,8 +30,7 @@ export default function AuthBridge() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("請先透過 Email 登入 Web 帳號。");
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${apiUrl}/api/economy/app-bind`, {
+      const response = await fetch(apiFetchPath('/api/economy/app-bind'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import { apiFetchPath } from '@/lib/api'
 import { useStore, Match } from '@/store/useStore'
 
 const HEARTBEAT_MS = 15_000
-const apiUrl = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 function mapMatchesFromApi(rows: Record<string, unknown>[]): Match[] {
   return rows.map((m) => ({
@@ -20,7 +20,7 @@ function mapMatchesFromApi(rows: Record<string, unknown>[]): Match[] {
 }
 
 async function fetchUserProfile(accessToken: string) {
-  const res = await fetch(`${apiUrl()}/api/user/profile`, {
+  const res = await fetch(apiFetchPath('/api/user/profile'), {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
   if (!res.ok) return null
@@ -114,8 +114,8 @@ export function useCasinoHeartbeat() {
           : {}
 
         const [matchesRes, treasuryRes] = await Promise.all([
-          fetch(`${apiUrl()}/api/betting/matches`),
-          fetch(`${apiUrl()}/api/internal/treasury`, { headers: authHeaders }),
+          fetch(apiFetchPath('/api/betting/matches')),
+          fetch(apiFetchPath('/api/internal/treasury'), { headers: authHeaders }),
         ])
 
         if (matchesRes.ok) {

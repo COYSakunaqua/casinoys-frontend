@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/useStore'
 import { supabase } from '@/lib/supabase'
+import { apiFetchPath } from '@/lib/api'
 import { TrendingUp, Zap, ChevronRight } from 'lucide-react'
 
 const ACTIVITY_SLIDES = [
@@ -44,8 +45,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchTreasury = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-        const res = await fetch(`${apiUrl}/api/internal/treasury`)
+        const res = await fetch(apiFetchPath('/api/internal/treasury'))
         if (res.ok) setTreasury(await res.json())
       } catch (err) {
         console.error('Failed to fetch treasury', err)

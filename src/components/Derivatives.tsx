@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore, Bet } from '@/store/useStore'
 import { supabase } from '@/lib/supabase'
-
-const apiUrl = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { apiFetchPath } from '@/lib/api'
+import confetti from 'canvas-confetti'
 
 type Toast = {
   id: number
@@ -73,7 +73,7 @@ export default function Derivatives() {
 
   const fetchMyBets = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`${apiUrl()}/api/betting/my_bets`, {
+    const res = await fetch(apiFetchPath('/api/betting/my_bets'), {
       headers: { Authorization: `Bearer ${session?.access_token}` },
     })
     if (res.ok) {
@@ -87,7 +87,7 @@ export default function Derivatives() {
 
   const fetchBetHistory = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`${apiUrl()}/api/betting/history`, {
+    const res = await fetch(apiFetchPath('/api/betting/history'), {
       headers: { Authorization: `Bearer ${session?.access_token}` },
     })
     if (res.ok) {
@@ -141,6 +141,16 @@ export default function Derivatives() {
     }
   }
 
+  const triggerJackpotEffect = () => {
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.8 }, // 從畫面偏下方往上噴
+      colors: ['#39FF14', '#FFD700', '#FFFFFF'], // 霓虹綠、金色、純白
+      zIndex: 9999
+    })
+  }
+
   const handleBuyMysteryBox = () => {
     withActionLock(async () => {
       try {
@@ -158,6 +168,12 @@ export default function Derivatives() {
           syncBalance(data.new_bank)
           const multiplier = Number(data.multiplier ?? 0)
           const finalOdds = Number(data.final_odds ?? 0)
+
+          // 核心：倍率大於等於 3 時引爆全螢幕特效
+          if (multiplier >= 3) {
+            triggerJackpotEffect()
+          }
+
           showToast(
             `📦 盲盒開啟！獲得 ${multiplier}x 賠率增益！最終賠率 ${finalOdds}x`,
             'jackpot'
@@ -212,6 +228,10 @@ export default function Derivatives() {
         if (res.ok) {
           const data = await res.json()
           syncBalance(data.new_bank)
+          
+          // 核心：套現成功引爆全螢幕特效
+          triggerJackpotEffect()
+          
           showToast(`套現成功 +$${discountedPayout.toLocaleString()}`, 'success')
           await fetchBetHistory()
         } else {
@@ -367,58 +387,58 @@ export default function Derivatives() {
               exit={{ opacity: 0, y: -6 }}
               className="flex flex-col gap-6"
             >
-      {isLoading ? (
-        <motion.div className="bg-gray-900/30 border border-gray-800/60 rounded-lg p-8 text-center text-gray-500 font-mono animate-pulse">
-          SYNCING DERIVATIVES LEDGER...
-        </motion.div>
-      ) : myBets.length === 0 ? (
-        <EmptyState
-          icon="📭"
-          message="無活耀部位，去盤口尋找獵物吧。"
-          actionLabel="前往 Betting Lobby"
-          onAction={() => setCurrentView('betting')}
-        />
-      ) : (
-        <>
-          {mysteryBoxes.length > 0 && (
-            <section className="flex flex-col gap-3">
-              <h3 className="text-sm font-bold text-yellow-500/90 tracking-widest border-b border-yellow-500/20 pb-2 uppercase">
-                Mystery Boxes
-              </h3>
-              <AnimatePresence mode="popLayout">
-                {mysteryBoxes.map((bet) => (
-                  <BetCard
-                    key={bet.id}
-                    bet={bet}
-                    isActionLocked={isActionLocked}
-                    onCashout={handleCashout}
-                    variant="mystery"
-                  />
-                ))}
-              </AnimatePresence>
-            </section>
-          )}
+              {isLoading ? (
+                <motion.div className="bg-gray-900/30 border border-gray-800/60 rounded-lg p-8 text-center text-gray-500 font-mono animate-pulse">
+                  SYNCING DERIVATIVES LEDGER...
+                </motion.div>
+              ) : myBets.length === 0 ? (
+                <EmptyState
+                  icon="📭"
+                  message="無活耀部位，去盤口尋找獵物吧。"
+                  actionLabel="前往 Betting Lobby"
+                  onAction={() => setCurrentView('betting')}
+                />
+              ) : (
+                <>
+                  {mysteryBoxes.length > 0 && (
+                    <section className="flex flex-col gap-3">
+                      <h3 className="text-sm font-bold text-yellow-500/90 tracking-widest border-b border-yellow-500/20 pb-2 uppercase">
+                        Mystery Boxes
+                      </h3>
+                      <AnimatePresence mode="popLayout">
+                        {mysteryBoxes.map((bet) => (
+                          <BetCard
+                            key={bet.id}
+                            bet={bet}
+                            isActionLocked={isActionLocked}
+                            onCashout={handleCashout}
+                            variant="mystery"
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </section>
+                  )}
 
-          {sportsBets.length > 0 && (
-            <section className="flex flex-col gap-3">
-              <h3 className="text-sm font-bold text-gray-400 tracking-widest border-b border-gray-800 pb-2 uppercase">
-                Sportsbook Positions
-              </h3>
-              <AnimatePresence mode="popLayout">
-                {sportsBets.map((bet) => (
-                  <BetCard
-                    key={bet.id}
-                    bet={bet}
-                    isActionLocked={isActionLocked}
-                    onCashout={handleCashout}
-                    variant="sports"
-                  />
-                ))}
-              </AnimatePresence>
-            </section>
-          )}
-        </>
-      )}
+                  {sportsBets.length > 0 && (
+                    <section className="flex flex-col gap-3">
+                      <h3 className="text-sm font-bold text-gray-400 tracking-widest border-b border-gray-800 pb-2 uppercase">
+                        Sportsbook Positions
+                      </h3>
+                      <AnimatePresence mode="popLayout">
+                        {sportsBets.map((bet) => (
+                          <BetCard
+                            key={bet.id}
+                            bet={bet}
+                            isActionLocked={isActionLocked}
+                            onCashout={handleCashout}
+                            variant="sports"
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </section>
+                  )}
+                </>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -531,8 +551,7 @@ function BetCard({
   variant: 'mystery' | 'sports'
 }) {
   const discountedPayout = Math.floor(bet.expected_payout * 0.75)
-  const label =
-    variant === 'mystery' ? 'MYSTERY BOX' : bet.team_selected
+  const label = variant === 'mystery' ? 'MYSTERY BOX' : bet.team_selected
 
   return (
     <motion.div

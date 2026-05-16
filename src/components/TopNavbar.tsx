@@ -43,8 +43,8 @@ export default function TopNavbar() {
             <span className="text-yellow-400/60 mx-6">✦</span>
             {marqueeText}
           </motion.div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </motion.div> {/* <--- 艦長，就是這裡！我幫你把剛才漏掉的結尾補上了 */}
 
       {/* Main command navbar */}
       <nav className="bg-gray-950/75 backdrop-blur-xl border-b border-cyan-500/20 shadow-[0_4px_24px_rgba(34,211,238,0.06)]">
@@ -53,7 +53,8 @@ export default function TopNavbar() {
           <motion.div
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            className="shrink-0"
+            className="shrink-0 cursor-pointer"
+            onClick={() => setCurrentView('dashboard')}
           >
             <h1 className="text-lg sm:text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]">
               CasinOYS V5
@@ -108,12 +109,12 @@ export default function TopNavbar() {
               >
                 ${balance.toLocaleString()}
               </motion.span>
-            </motion.div>
+            </div>
             <span className="bg-yellow-500/15 text-yellow-400 text-[10px] sm:text-xs font-bold px-2 py-1 rounded border border-yellow-500/40 font-mono whitespace-nowrap">
               VIP: {vipLevel}
             </span>
           </motion.div>
-        </motion.div>
+        </div>
       </nav>
     </header>
   )
